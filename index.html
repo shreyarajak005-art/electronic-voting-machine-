@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Electronic Voting Machine – 8085 Logic Simulator</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#f4f6f9;--card:#fff;--tx:#0f172a;--mut:#475569;--gb:#dde2ea;--ac:#2563eb;--ok:#16a34a;--bad:#dc2626;--wn:#d97706}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f141b;--card:#18202b;--tx:#e6ebf2;--mut:#9aa7ba;--gb:#283342;--ac:#60a5fa;--ok:#4ade80;--bad:#f87171;--wn:#fbbf24}}
+:root[data-theme="dark"]{--bg:#0f141b;--card:#18202b;--tx:#e6ebf2;--mut:#9aa7ba;--gb:#283342;--ac:#60a5fa;--ok:#4ade80;--bad:#f87171;--wn:#fbbf24}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif}
+header{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin:8px 12px;padding:8px 12px;background:var(--card);border:1px solid var(--gb);border-radius:12px}
+h1{font-size:16px;margin:0}h2{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);margin:0 0 6px}
+main{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:10px;padding:0 12px 12px;max-width:1100px;margin:auto}
+.card{background:var(--card);border:1px solid var(--gb);border-radius:12px;padding:10px;min-width:0}.wide{grid-column:1/-1}
+button{font:inherit;color:var(--tx);background:var(--card);border:1px solid var(--gb);border-radius:8px;padding:6px 10px;cursor:pointer}
+button:disabled{opacity:.4;cursor:default}button.p{background:color-mix(in srgb,var(--ac) 30%,transparent);border-color:var(--ac)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.mut{color:var(--mut);font-size:12px}
+.dash{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:12px;align-items:start}
+@media (max-width:640px){.dash{grid-template-columns:1fr}}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:6px}
+.chip{border:1px solid var(--gb);border-radius:8px;padding:5px 8px;font:600 12px ui-monospace,Menlo,monospace}.chip small{display:block;color:var(--mut);font-weight:400;font-size:10px}
+.chip.on{border-color:var(--ac);background:color-mix(in srgb,var(--ac) 22%,transparent)}.chip.bad{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 16%,transparent)}
+.bits{display:flex;gap:4px;margin-bottom:8px}.b{flex:1;text-align:center;border:1px solid var(--gb);border-radius:6px;font:600 15px ui-monospace,monospace}.b s{display:block;text-decoration:none;font-size:9px;color:var(--mut)}.b.on{background:color-mix(in srgb,var(--ac) 35%,transparent);border-color:var(--ac)}
+.code{font:12px ui-monospace,monospace;overflow-x:auto}.ln{display:flex;gap:8px;padding:2px 6px;border-radius:6px;white-space:nowrap}.ln b{width:84px;color:var(--mut);font-weight:600}.ln span{width:104px}.ln i{color:var(--mut)}.ln em{font-style:normal;width:48px;color:var(--ac)}.ln u{text-decoration:none;width:66px;color:var(--mut)}.ln.cur{background:color-mix(in srgb,var(--ac) 35%,transparent)}
+#log{height:140px;overflow:auto;font:12px ui-monospace,monospace;color:var(--mut)}#log div{padding:2px 0;border-bottom:1px solid var(--gb)}
+#demo{display:grid;grid-template-columns:1fr 1fr;gap:6px}#demo button{text-align:left;font-size:12.5px}
+#say{margin-top:8px;font-size:13px;min-height:3.6em;font-weight:600}
+.dev{margin:0 auto;width:min(100%,310px);border:2px solid var(--gb);border-radius:14px;padding:10px;background:color-mix(in srgb,var(--tx) 6%,var(--card));transform:perspective(800px) rotateY(-10deg) rotateX(3deg);box-shadow:8px 8px 0 color-mix(in srgb,var(--tx) 10%,transparent);transition:border-color .3s}
+.lcd{background:#0c2a2a;color:#7ff5d0;border-radius:8px;padding:8px 10px;font:13px ui-monospace,monospace;box-shadow:inset 0 0 18px #000}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+#lcd{text-align:center;font-weight:700;margin-bottom:8px}
+.cr{display:grid;grid-template-columns:20px 1fr 18px 62px;gap:8px;align-items:center;padding:6px 4px;border-bottom:1px solid var(--gb)}
+.led{width:14px;height:14px;border-radius:50%;background:color-mix(in srgb,var(--bad) 20%,transparent);border:1px solid var(--bad);transition:.2s}.led.on{background:var(--bad);box-shadow:0 0 12px var(--bad)}
+.vb{background:#2563eb;color:#fff;border:none;border-radius:20px;height:28px;font-weight:700}
+.bar{height:16px;background:var(--ac);border-radius:4px;transition:width .6s}.rr{display:grid;grid-template-columns:130px 1fr 34px;gap:8px;align-items:center;margin:6px 0}
+</style></head><body>
+<header><h1>🗳️ Electronic Voting Machine — 8085 Logic Simulator</h1>
+<div class="row"><label class="mut">Clock <input id="spd" type="range" min="1" max="5" value="4"></label><button id="snd">🔊 Sound on</button><button id="th">Theme</button><button id="rst">Reset</button></div></header>
+<main>
+<section class="card wide"><h2>Ballot unit (voter) and control unit (officer)</h2><div class="dash"><div><div class="dev"><div class="lcd" id="lcd"></div><div id="cands"></div></div></div>
+<div><div class="mut" style="margin-bottom:4px">Control unit (presiding officer)</div><div class="row"><button class="p" id="en">✅ Enable ballot</button><button id="cl">🏁 Close poll &amp; show result</button></div>
+<div class="grid" id="lamps" style="margin:8px 0"></div>
+<div class="mut" style="margin-bottom:4px">Use cases (auto-demo)</div><div id="demo"></div><div id="say">Pick a use case to start.</div></div></div></section>
+<section class="card"><h2>I/O ports</h2><div class="mut">IN 00H: D0-D3 candidate buttons, D7 ballot enable</div><div class="bits" id="pin"></div><div class="mut">OUT 01H: D0-D3 LEDs, D4 beep, D7 ready lamp</div><div class="bits" id="pout"></div></section>
+<section class="card"><h2>8085 registers and memory</h2><div class="code" id="regs" style="line-height:1.8;font-weight:600"></div></section>
+<section class="card wide"><h2>Assembly program (GNUSim8085 style)</h2><div class="code" id="asm"></div></section>
+<section class="card"><h2>Official result</h2><div id="res"></div></section>
+<section class="card"><h2>Event log</h2><div id="log"></div></section>
+</main>
+<script>
+const $=id=>document.getElementById(id),hx=v=>v.toString(16).toUpperCase().padStart(2,"0")+"H",h4=v=>v.toString(16).toUpperCase().padStart(4,"0")+"H";
+function log(t){const d=document.createElement("div");d.textContent=new Date().toLocaleTimeString()+"  "+t;$("log").prepend(d)}
+$("th").onclick=()=>{const d=document.documentElement,dark=d.dataset.theme?d.dataset.theme=="dark":matchMedia("(prefers-color-scheme:dark)").matches;d.dataset.theme=dark?"light":"dark"};
+const CAND=[["A","⭐","Star"],["B","🌸","Flower"],["C","🚲","Bicycle"],["D","☀️","Sun"]];
+const ASM=[["START:","IN 00H","read panel"],["","MOV B,A","save copy"],["","ANI 80H","ballot enabled?"],["","JZ LOCKED","no: ignore"],["","MOV A,B","restore"],["","ANI 0FH","candidate key?"],["","JZ READY","none yet"],["","LXI H,2050H","counter table"],["NEXT:","RAR","bit0 → CY"],["","JC COUNT","found it"],["","INX H","next counter"],["","JMP NEXT","keep looking"],["COUNT:","INR M","vote++"],["","MOV A,B","restore"],["","ANI 0FH","LED pattern"],["","ORI 10H","add beep bit"],["","OUT 01H","LED + beep"],["","JMP START","lock + wait"],["READY:","MVI A,80H","ready lamp"],["","OUT 01H","lamp on"],["","JMP START","wait"],["LOCKED:","MVI A,00H","all off"],["","OUT 01H","lamps off"],["","JMP START","wait"]];
+const AD=["2000H","2002H","2003H","2005H","2008H","2009H","200BH","200EH","2011H","2012H","2015H","2016H","2019H","201AH","201BH","201DH","201FH","2021H","2024H","2026H","2028H","202BH","202DH","202FH"];
+const BY=["DB 00","47","E6 80","CA 2B 20","78","E6 0F","CA 24 20","21 50 20","1F","DA 19 20","23","C3 11 20","34","78","E6 0F","F6 10","D3 01","C3 00 20","3E 80","D3 01","C3 00 20","3E 00","D3 01","C3 00 20"];
+let inp,outp,run,c,mem,counted,shown,tok=0,AC,snd=true,timer;
+const bits=v=>[7,6,5,4,3,2,1,0].map(i=>`<span class="b ${v>>i&1?"on":""}"><s>D${i}</s>${v>>i&1}</span>`).join("");
+function aud(){if(!AC){try{AC=new(window.AudioContext||window.webkitAudioContext)()}catch(e){}}try{AC&&AC.state=="suspended"&&AC.resume()}catch(e){}}
+function beep(){if(!snd||!AC)return;try{const o=AC.createOscillator(),g=AC.createGain();o.frequency.value=880;g.gain.value=.08;o.connect(g);g.connect(AC.destination);o.start();o.stop(AC.currentTime+.9)}catch(e){}}
+function reset(){tok++;inp=0;outp=0;run=false;counted=false;shown=false;mem=[0,0,0,0];c={A:0,B:0,hl:0x2050,Z:0,S:0,CY:0,pc:0,cur:-1};$("log").innerHTML="";log("Reset: ballot locked, all counters = 0");render()}
+function onOut(){const k=[0,1,2,3].find(k=>outp>>k&1);
+ if(k!==undefined){log("OUT 01H = "+hx(outp)+" → vote recorded for Candidate "+CAND[k][0]+" (beep)");beep()}
+ else if(outp&128)log("OUT 01H = "+hx(outp)+" → READY, waiting for the voter");else log("OUT 01H = 00H → LOCKED: no vote counted")}
+function finish(){const had=counted;counted=false;inp&=128;if(had)inp=0}
+function step(){if(c.pc<0){run=false;c.cur=-1;c.pc=0;finish();render();return}
+ const i=c.pc;let n=i+1;c.cur=i;const fl=()=>{c.Z=c.A?0:1;c.S=c.A>>7&1;c.CY=0};
+ switch(i){case 0:c.A=inp;break;case 1:c.B=c.A;break;case 2:c.A&=128;fl();break;case 3:if(c.Z)n=21;break;case 4:c.A=c.B;break;case 5:c.A&=15;fl();break;case 6:if(c.Z)n=18;break;
+ case 7:c.hl=0x2050;break;case 8:{const cy=c.A&1;c.A=(c.A>>1)|(c.CY<<7);c.CY=cy;break}case 9:if(c.CY)n=12;break;case 10:c.hl++;break;case 11:n=8;break;
+ case 12:{const k=c.hl-0x2050;mem[k]=(mem[k]+1)&255;counted=true;c.Z=mem[k]?0:1;c.S=mem[k]>>7&1;break}
+ case 13:c.A=c.B;break;case 14:c.A&=15;fl();break;case 15:c.A|=16;fl();break;case 16:case 19:case 22:outp=c.A;onOut();break;
+ case 18:c.A=128;break;case 21:c.A=0;break;case 17:case 20:case 23:n=-1;break}
+ c.pc=n;render()}
+const start=()=>{run=true;c.pc=0;render()};
+function enable(){if(run)return;inp|=128;log("Officer enables the ballot (D7 = 1)");start()}
+function vote(k){if(run)return;inp|=1<<k;log("Voter presses the button for Candidate "+CAND[k][0]);start()}
+function closePoll(){shown=true;log("Poll closed: result unsealed");render()}
+function render(){const ready=inp&128,voted=outp&15,total=mem.reduce((a,b)=>a+b,0);
+ $("lcd").textContent=run?"PROCESSING...":(voted?"✔ VOTE RECORDED":(ready?"READY — PRESS A BUTTON":"LOCKED — WAIT FOR OFFICER"));
+ $("cands").innerHTML=CAND.map((x,k)=>`<div class="cr"><b>${k+1}</b><span>${x[1]} Candidate ${x[0]} — ${x[2]}</span><i class="led ${outp>>k&1?"on":""}"></i><button class="vb" data-k="${k}">VOTE</button></div>`).join("");
+ $("lamps").innerHTML=`<div class="chip ${ready&&!run?"on":""}"><small>READY lamp</small>${ready?1:0}</div><div class="chip ${outp&16?"on":""}"><small>BEEP</small>${outp>>4&1}</div><div class="chip"><small>Ballots cast</small>${total}</div>`;
+ $("pin").innerHTML=bits(inp);$("pout").innerHTML=bits(outp);
+ $("regs").innerHTML=`A = ${hx(c.A)} &nbsp; B = ${hx(c.B)} &nbsp; HL = ${h4(c.hl)}<br>Z = ${c.Z} &nbsp; S = ${c.S} &nbsp; CY = ${c.CY}<br>PC = ${AD[run&&c.cur>=0?c.cur:0]} &nbsp; IR: ${run&&c.cur>=0?ASM[c.cur][1]:"— (waiting)"}<br><span style="color:var(--mut)">Memory</span> ${mem.map((v,k)=>h4(0x2050+k)+"="+hx(v)).join(" &nbsp; ")}`;
+ $("asm").innerHTML=ASM.map((r,i)=>`<div class="ln ${run&&i==c.cur?"cur":""}"><em>${AD[i]}</em><u>${BY[i]}</u><b>${r[0]}</b><span>${r[1]}</span><i>; ${r[2]}</i></div>`).join("");
+ const mx=Math.max(...mem,1),w=Math.max(...mem);
+ $("res").innerHTML=shown?CAND.map((x,k)=>`<div class="rr"><span>${x[1]} ${x[0]} — ${x[2]}</span><div class="bar" style="width:${mem[k]/mx*100}%"></div><b>${mem[k]}</b></div>`).join("")+`<div class="mut">Total ${total} votes. `+(total?(mem.filter(v=>v==w).length>1?"Result: tie.":"Winner: Candidate "+CAND[mem.indexOf(w)][0]+"."):"No votes cast.")+"</div>":'<div class="mut">🔒 Sealed until the officer closes the poll. (Memory 2050H–2053H holds the counters.)</div>'}
+$("cands").onclick=e=>{const b=e.target.closest("button");if(b){aud();vote(+b.dataset.k)}};
+$("en").onclick=()=>{aud();enable()};$("cl").onclick=closePoll;$("rst").onclick=reset;
+$("snd").onclick=()=>{snd=!snd;aud();$("snd").textContent=snd?"🔊 Sound on":"🔇 Sound off"};
+function loop(){clearInterval(timer);timer=setInterval(()=>{if(run)step()},[1000,700,450,250,120][$("spd").value-1])}$("spd").oninput=loop;
+async function play(i){reset();const my=++tok;const h={W:ms=>new Promise((r,j)=>setTimeout(()=>my==tok?r():j("stop"),ms)),U:async()=>{while(run)await h.W(100)}};
+ try{for(const [say,fn] of DEMOS[i][1]){$("say").textContent=say;await fn(h);await h.U();await h.W(1000)}$("say").textContent="✔ Demo finished. Try another use case, or press the buttons yourself."}catch(e){}}
+const DEMOS=[
+["🗳️ One voter votes",[["The officer enables the ballot unit (D7 = 1). The READY lamp lights.",async h=>enable()],["The voter presses Candidate B. The 8085 finds the bit with RAR and JC, then counts the vote with INR M. LED + beep.",async h=>vote(1)],["The unit locks itself again until the officer enables the next ballot.",async h=>{}]]],
+["🚫 Vote without ballot",[["The voter presses Candidate A, but the officer has not enabled the ballot.",async h=>vote(0)],["ANI 80H = 0 → JZ LOCKED: nothing is counted and no beep.",async h=>{}]]],
+["🔁 Double-voting attempt",[["Ballot enabled.",async h=>enable()],["The voter votes for Candidate C. Vote counted, the ballot locks.",async h=>vote(2)],["The same voter presses C again → the ballot is locked → ignored. One person, one vote.",async h=>vote(2)]]],
+["🏁 Mini election (6 voters)",[["Six voters vote one after another. Each needs the officer to enable the ballot first.",async h=>{const order=[0,1,0,2,0,3];for(let n=0;n<order.length;n++){$("say").textContent="Voter "+(n+1)+" of 6: officer enables, voter presses Candidate "+CAND[order[n]][0]+".";enable();await h.U();await h.W(500);vote(order[n]);await h.U();await h.W(800)}}],["The officer closes the poll and the result is unsealed.",async h=>closePoll()]]]];
+$("demo").innerHTML=DEMOS.map((d,i)=>`<button data-i="${i}">${d[0]}</button>`).join("")+'<button id="stop">⏹ Stop</button>';
+$("demo").onclick=e=>{const b=e.target.closest("button");if(!b)return;aud();if(b.id=="stop"){tok++;$("say").textContent="Demo stopped.";return}play(+b.dataset.i)};
+reset();loop();
+</script></body></html>
